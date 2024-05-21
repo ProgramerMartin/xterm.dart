@@ -287,6 +287,12 @@ class RenderTerminal extends RenderBox with RelayoutWhenSystemFontsChangeMixin {
         _terminal.buffer.createAnchorFromOffset(fromPosition),
       );
     } else {
+      // FIXME@Martin: Fixed start selection position
+      double dy = _padding.top;
+      if (_scrollOffset != startOffset) {
+        dy += startOffset - _scrollOffset;
+      }
+      final fromPosition = getCellOffset(Offset(from.dx, from.dy + dy));
       var toPosition = getCellOffset(to);
       if (toPosition.x >= fromPosition.x) {
         toPosition = CellOffset(toPosition.x + 1, toPosition.y);
@@ -296,6 +302,12 @@ class RenderTerminal extends RenderBox with RelayoutWhenSystemFontsChangeMixin {
         _terminal.buffer.createAnchorFromOffset(toPosition),
       );
     }
+  }
+
+  // FIXME@Martin: Record Start Select Location
+  double startOffset = 0;
+  void setStartOffset() {
+    startOffset = _offset.pixels;
   }
 
   /// Send a mouse event at [offset] with [button] being currently in [buttonState].
