@@ -2,6 +2,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/widgets.dart';
 import 'package:xterm/src/core/mouse/button.dart';
 import 'package:xterm/src/core/mouse/button_state.dart';
+import 'package:xterm/src/terminal.dart';
 import 'package:xterm/src/terminal_view.dart';
 import 'package:xterm/src/ui/controller.dart';
 import 'package:xterm/src/ui/gesture/gesture_detector.dart';
@@ -13,6 +14,8 @@ class TerminalGestureHandler extends StatefulWidget {
     super.key,
     required this.terminalView,
     required this.terminalController,
+    required this.scrollController,
+    required this.terminal,
     this.child,
     this.onTapUp,
     this.onSingleTapUp,
@@ -25,6 +28,8 @@ class TerminalGestureHandler extends StatefulWidget {
   });
 
   final TerminalViewState terminalView;
+  final Terminal terminal;
+  final ScrollController scrollController;
 
   final TerminalController terminalController;
 
@@ -186,6 +191,23 @@ class _TerminalGestureHandlerState extends State<TerminalGestureHandler> {
   }
 
   void onDragUpdate(DragUpdateDetails details) {
+    // FIXME@Martin: scroll selection
+    if (widget.scrollController.hasClients) {
+      if (details.globalPosition.dy < 0) {
+        double position = widget.scrollController.offset -
+            widget.terminalView.cursorRect.height;
+        widget.scrollController.jumpTo(position < 0 ? 0 : position);
+      } else if (details.globalPosition.dy >
+          widget.terminal.viewHeight * widget.terminalView.cursorRect.height) {
+        double position = widget.scrollController.offset +
+            widget.terminalView.cursorRect.height;
+        double maxScrollExtent =
+            widget.scrollController.position.maxScrollExtent;
+        widget.scrollController.jumpTo(
+          position > maxScrollExtent ? maxScrollExtent : position,
+        );
+      }
+    }
     renderTerminal.selectCharacters(
       _lastDragStartDetails!.localPosition,
       details.localPosition,
