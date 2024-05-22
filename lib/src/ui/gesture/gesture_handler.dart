@@ -193,12 +193,13 @@ class _TerminalGestureHandlerState extends State<TerminalGestureHandler> {
   void onDragUpdate(DragUpdateDetails details) {
     // FIXME@Martin: scroll selection
     if (widget.scrollController.hasClients) {
-      if (details.globalPosition.dy < 0) {
+      if (details.globalPosition.dy < widget.terminalView.cursorRect.height) {
         double position = widget.scrollController.offset -
             widget.terminalView.cursorRect.height;
         widget.scrollController.jumpTo(position < 0 ? 0 : position);
       } else if (details.globalPosition.dy >
-          widget.terminal.viewHeight * widget.terminalView.cursorRect.height) {
+          widget.terminal.viewHeight * widget.terminalView.cursorRect.height -
+              widget.terminalView.cursorRect.height) {
         double position = widget.scrollController.offset +
             widget.terminalView.cursorRect.height;
         double maxScrollExtent =
